@@ -113,9 +113,16 @@ int main()
 
 	// calculate the mean and median temperatures
 	double sum = 0;
-	for (Reading r : data)
-		sum += r.temperature;
+	for (int i = 0; i < data.size(); i++)
+	{
+		// convert from Fahrenheit to Celsius
+		if (data[i].suffix == 'F' || data[i].suffix == 'f')
+			data[i].temperature = (data[i].temperature - 32.0) * (5.0 / 9.0);
+
+		sum += data[i].temperature;
+	}
 	cout << "The mean temperature is: " << sum / data.size() << endl;
+
 
 	//sot the vector by temperature values
 	double median;
