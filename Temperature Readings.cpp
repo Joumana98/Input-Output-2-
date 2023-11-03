@@ -117,7 +117,10 @@ int main()
 	{
 		// convert from Fahrenheit to Celsius
 		if (data[i].suffix == 'F' || data[i].suffix == 'f')
+		{
 			data[i].temperature = (data[i].temperature - 32.0) * (5.0 / 9.0);
+			data[i].suffix = 'c';
+		}
 
 		sum += data[i].temperature;
 	}
