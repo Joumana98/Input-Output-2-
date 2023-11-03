@@ -41,12 +41,21 @@ istream& operator>> (istream& in, Reading& r)
 	int d, h;
 	double t;
 	char c1, c2;
-	in >> c1 >> d >> h >> t >> c2;
+	in >> c1;
 	if (!in)
 		return in;
-	if (c1 != '(' || c2 != ')')
+	if (c1 != '(')
 	{
-		cout << "Bad Reading format" << endl;
+		in.unget();
+		in.clear(ios_base::failbit);
+		return in;
+	}
+	in >> d >> h >> t >> c2;
+	if (!in)
+		return in;
+	if (c2 != ')')
+	{
+		in.unget();
 		in.clear(ios_base::failbit);
 		return in;
 	}
@@ -63,6 +72,14 @@ int month_to_int(string m)
 			return i;
 	}
 	return -1;
+}
+
+string int_to_month(int m)
+{
+	if (m >= 0 && m <= 11)
+		return monthNames[m];
+	else
+		error("Wrong month number.");
 }
 
 bool is_valid(Reading r)
@@ -86,7 +103,7 @@ istream& operator>> (istream& in, Month& mm)
 	in >> c1;
 	if (!in)
 		return in;
-	if (c1 != '(')
+	if (c1 != '{')
 	{
 		in.unget();
 		in.clear(ios_base::failbit);
@@ -118,6 +135,10 @@ istream& operator>> (istream& in, Month& mm)
 		else
 			invalids++;
 	}
+	if (!in)
+		in.clear();
+
+
 	if (duplicates)
 		error("Duplicate readings in a month");
 	if (invalids)
@@ -143,7 +164,7 @@ istream& operator>> (istream& in, Year& y)
 	in >> c1;
 	if (!in)
 		return in;
-	if (c1 != '(')
+	if (c1 != '{')
 	{
 		in.unget();
 		in.clear(ios_base::failbit);
@@ -168,7 +189,40 @@ istream& operator>> (istream& in, Year& y)
 			break;
 		y.months[mm.month] = mm;
 	}
+	if (!in)
+		in.clear();
+	in >> c2;
+	if (!in)
+		return in;
+	if (c2 != '}')
+	{
+		in.unget();
+		in.clear(ios_base::failbit);
+		return in;
+	}
+	return in;
 
+}
+
+
+void printYear(ostream& out, const Year& y)
+{
+	out << "{ Year " << y.year << endl;
+	for (int i = 0; i < 12; i++)
+	{
+		if (y.months[i].month != not_a_month)
+		{
+			out << " {Month " << int_to_month(y.months[i].month) << " ";
+			for (int j = 1; j <= 31; j++)
+			{
+				for (int z = 0; z < 24; z++)
+					if (y.months[i].days[j].hours[z] != not_a_reading)
+						out << "(" << j << " " << z << " " << y.months[i].days[j].hours[z] << ")" << " ";
+			}
+			out << "}" << endl;
+		}
+	}
+	out << "}" << endl;
 }
 
 
@@ -191,8 +245,15 @@ int main()
 		inFile >> y;
 		if (!inFile)
 			break;
-		years.push_back(y);
 
+		years.push_back(y);
+		cout << "Year Added" << endl;
+
+	}
+	for (Year y : years)
+	{
+		printYear(cout, y);
+		cout << endl;
 	}
 
 	return 0;
